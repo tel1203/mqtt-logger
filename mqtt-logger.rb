@@ -1,6 +1,7 @@
 require "mqtt"
 require "fileutils"
-require 'uri'
+require "erb"
+require './mqtt-logger-simpledb-functions.rb'
 
 mqtt_host = "192.168.11.151"
 mqtt_port = "1883"
@@ -29,13 +30,8 @@ while (true) do
   topic,message = client.get
   p [topic, message]
 
-  tmp = topic.split("/")
-  data_dir = tmp[0, tmp.size-1]
-  data_file = tmp[-1]
-
-  output_dir  = dir+"/"+data_dir.join("/")
-  output_file = dir+"/"+data_dir.join("/")+"/"+data_file+".txt"
-  output = sprintf("%s\t%s\t%s", Time.now.to_i, topic, URI.escape(message))
+  output_dir, output_file = make_dirfilename(topic, dir)
+  output = sprintf("%s\t%s\t%s", Time.now.to_i, topic, ERB::Util.url_encode(message))
 
   FileUtils.mkdir_p(output_dir)
   f = open(output_file, "a")
