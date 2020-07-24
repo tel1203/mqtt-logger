@@ -32,7 +32,7 @@ def read_jsondata(topic, options={})
       tmp1, tmp2, tmp3 = line.chop.split("\t")
       time = tmp1.to_i
       topic = tmp2
-      message = CGI.unescape(tmp3)
+      message = CGI.unescape(tmp3 || "")
       next if (time >= max_time && max_time != 0)
       break if (time < since_time)
   
@@ -43,6 +43,7 @@ def read_jsondata(topic, options={})
       i += 1
     }
   rescue Errno::ENOENT
+  rescue
   end
   
    return (result.to_json)

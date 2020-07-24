@@ -22,7 +22,7 @@ class MQTT_SimpleDB < Grape::API
      options = {:dir => dir, :count => params["count"],
         :since_time => params["since_time"],
         :max_time => params["max_time"]}
-     results = read_jsondata(params["topic"], options)
+     results = read_jsondata(params["topic"], **options)
      
      result = { 'results': results }
      return (result)
