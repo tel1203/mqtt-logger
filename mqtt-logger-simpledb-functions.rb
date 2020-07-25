@@ -13,7 +13,7 @@ def make_dirfilename(topic, dir="")
   return ([output_dir, output_file])
 end
 
-def read_jsondata(topic, options={})
+def read_data(topic, options={})
   dir = options[:dir]?options[:dir]:""
   count = (options[:count]!=nil)?options[:count]:0
   since_time = options[:since_time]?options[:since_time]:0
@@ -46,6 +46,6 @@ def read_jsondata(topic, options={})
   rescue
   end
   
-   return (result.to_json)
+   return (result)
 end
 

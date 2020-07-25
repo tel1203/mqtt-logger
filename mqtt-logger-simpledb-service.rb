@@ -17,15 +17,19 @@ require './mqtt-logger-simpledb-functions.rb'
 
 class MQTT_SimpleDB < Grape::API
   format :json
+  before do
+    header "Access-Control-Allow-Origin", "*"
+  end
+  
   get '/mqttdata' do
      dir = "./data"
      options = {:dir => dir, :count => params["count"],
         :since_time => params["since_time"],
         :max_time => params["max_time"]}
-     results = read_jsondata(params["topic"], **options)
+     results = read_data(params["topic"], options)
      
-     result = { 'results': results }
-     return (result)
+#     result = { 'results': results }
+     return (results)
   end
 end
 
