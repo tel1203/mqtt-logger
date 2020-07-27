@@ -1,0 +1,9 @@
+data_dir: = "./data"
+
+mqtt_host: "192.168.11.151"
+mqtt_port: "1883"
+flag_ssl: false
+cert_file: ""
+key_file: ""
+ca_file: ""                                                      
+

@@ -1,38 +1,56 @@
 require "mqtt"
 require "fileutils"
 require "erb"
+require "yaml"
+require 'optparse'
 require './mqtt-logger-simpledb-functions.rb'
 
-mqtt_host = "192.168.11.151"
-mqtt_port = "1883"
-flag_ssl = false
+config_file = nil
+opt = OptionParser.new
+opt.on('-c', '--config FILE', 'config file') { |v| config_file = v }
+opt.parse(ARGV)
 
-dir = "./data"
+config_file = "config.yml" if (config_file == nil)
+printf("Read Config: [%s]\n", config_file)
+
+config = YAML.load_file(config_file)
+p config
 
 def set_client(mqtt_host, mqtt_port,
   flag_ssl=false, cert_file="", key_file="", ca_file="")
 
   client = nil
   if (flag_ssl) then
-#    cert_file = "cert.pem"
-#    key_file = "thing-private-key.pem",
-#    ca_file = "rootCA.pem"
-    client = MQTT::Client.connect(host: mqtt_host,
-                         port: mqtt_port,
-                         ssl: true,
-                         cert_file: cert_file,
-                         key_file: key_file,
-                         ca_file: ca_file)
+    printf("Connecct MQTT-SSL [%s:%s]\n",
+      mqtt_host, mqtt_port)
+    client = MQTT::Client.connect(
+        host: mqtt_host,
+        port: mqtt_port,
+        ssl: true,
+        cert_file: cert_file,
+        key_file: key_file,
+        ca_file: ca_file)
   else
-    client = MQTT::Client.connect(host: mqtt_host,
-                         port: mqtt_port)
+    printf("Connecct MQTT [%s:%s]\n",
+      mqtt_host, mqtt_port)
+    client = MQTT::Client.connect(
+        host: mqtt_host,
+        port: mqtt_port)
   end
 
   return (client) 
 end
 
-client = set_client(mqtt_host, mqtt_port)
+client = set_client(
+  config["mqtt_host"],
+  config["mqtt_port"],
+  config["flag_ssl"],
+  config["cert_file"],
+  config["key_file"],
+  config["ca_file"]
+)
 
+dir = config["data_dir"]
 while (true) do
 
   begin
@@ -40,7 +58,14 @@ while (true) do
     topic,message = client.get
   rescue => error
     p error
-    client = set_client(mqtt_host, mqtt_port)
+    client = set_client(
+      config["mqtt_host"],
+      config["mqtt_port"],
+      config["flag_ssl"],
+      config["cert_file"],
+      config["key_file"],
+      config["ca_file"]
+    )
     retry
   end
 
@@ -54,10 +79,3 @@ while (true) do
   f.close()
 end
 
-#
-#Traceback (most recent call last):
-#        3: from /Users/tel/.rbenv/versions/2.7.1/lib/ruby/gems/2.7.0/gems/mqtt-0.5.0/lib/mqtt/client.rb:302:in `block in connect'
-#        2: from /Users/tel/.rbenv/versions/2.7.1/lib/ruby/gems/2.7.0/gems/mqtt-0.5.0/lib/mqtt/client.rb:481:in `receive_packet'
-#        1: from /Users/tel/.rbenv/versions/2.7.1/lib/ruby/gems/2.7.0/gems/mqtt-0.5.0/lib/mqtt/packet.rb:31:in `read'
-#/Users/tel/.rbenv/versions/2.7.1/lib/ruby/gems/2.7.0/gems/mqtt-0.5.0/lib/mqtt/packet.rb:283:in `read_byte': Failed to read byte from socket (MQTT::ProtocolException)
-#
